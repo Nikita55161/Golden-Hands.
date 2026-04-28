@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Portal | Golden Hands CBO</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Segoe UI',sans-serif;background:#f0f7f3;min-height:100vh}
+    /* LOGIN */
+    #login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#055c3e,#088058,#2eab6a)}
+    .login-card{background:#fff;border-radius:16px;padding:44px 38px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,0.25)}
+    .login-logo{text-align:center;margin-bottom:28px}
+    .login-logo .icon{width:64px;height:64px;background:#e8f5ee;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 12px}
+    .login-logo h2{color:#088058;font-size:22px;margin-bottom:4px}
+    .login-logo p{color:#888;font-size:13px}
+    .fg{margin-bottom:18px}
+    .fg label{display:block;font-size:13px;font-weight:600;color:#444;margin-bottom:6px}
+    .fg input{width:100%;padding:11px 14px;border:1px solid #ddd;border-radius:8px;font-size:15px;outline:none;transition:border .2s}
+    .fg input:focus{border-color:#088058}
+    .login-btn{width:100%;padding:13px;background:#088058;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;transition:background .2s}
+    .login-btn:hover{background:#055c3e}
+    .err-box{background:#fdecea;color:#c0392b;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:16px;display:none;border-left:3px solid #e74c3c}
+    .login-hint{text-align:center;margin-top:16px;font-size:12px;color:#aaa}
+    /* DASHBOARD */
+    #dashboard{display:none;min-height:100vh}
+    .sidebar{position:fixed;left:0;top:0;bottom:0;width:230px;background:#088058;display:flex;flex-direction:column;z-index:200;overflow-y:auto}
+    .sb-logo{padding:20px 18px 14px;border-bottom:1px solid rgba(255,255,255,.15);display:flex;align-items:center;gap:10px}
+    .sb-logo img{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.15);padding:2px}
+    .sb-logo-text{color:#fff;font-size:13px;font-weight:700;line-height:1.3}
+    .sb-logo-sub{font-size:10px;opacity:.7;font-weight:400}
+    .sb-nav{flex:1;padding:12px 0}
+    .sb-item{display:flex;align-items:center;gap:11px;padding:11px 18px;cursor:pointer;color:rgba(255,255,255,.8);font-size:13px;font-weight:500;border:none;background:none;width:100%;text-align:left;transition:background .2s;border-left:3px solid transparent}
+    .sb-item:hover,.sb-item.active{background:rgba(255,255,255,.15);color:#fff;border-left-color:#fff}
+    .sb-item i{width:16px;text-align:center;font-size:13px}
+    .sb-divider{height:1px;background:rgba(255,255,255,.1);margin:8px 0}
+    .sb-footer{padding:14px 18px;border-top:1px solid rgba(255,255,255,.15)}
+    .sb-user{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+    .sb-avatar{width:34px;height:34px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff}
+    .sb-uname{color:#fff;font-size:12px;font-weight:600}
+    .sb-urole{font-size:10px;color:rgba(255,255,255,.65)}
+    .logout-btn{width:100%;padding:9px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:7px;cursor:pointer;font-size:12px;transition:background .2s}
+    .logout-btn:hover{background:rgba(255,255,255,.2)}
+    /* MAIN */
+    .main{margin-left:230px;min-height:100vh;display:flex;flex-direction:column}
+    .topbar{background:#fff;padding:14px 24px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e8e8e8;position:sticky;top:0;z-index:100}
+    .topbar-left h2{font-size:17px;color:#088058;margin-bottom:2px}
+    .topbar-left p{font-size:12px;color:#999}
+    .topbar-right{display:flex;align-items:center;gap:14px}
+    .clock-badge{background:#e8f5ee;color:#088058;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px}
+    .view-site-btn{background:#088058;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;transition:background .2s}
+    .view-site-btn:hover{background:#055c3e}
+    .content{padding:24px;flex:1}
+    /* PANELS */
+    .panel{display:none}.panel.active{display:block}
+    /* STAT CARDS */
+    .stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:24px}
+    .sc{background:#fff;border-radius:12px;padding:18px;border-left:4px solid #088058;box-shadow:0 2px 6px rgba(0,0,0,.06)}
+    .sc .n{font-size:28px;font-weight:700;color:#088058}
+    .sc .l{font-size:12px;color:#888;margin-top:3px}
+    /* CARDS */
+    .card{background:#fff;border-radius:12px;padding:22px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+    .card-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+    .card-hdr h3{font-size:15px;color:#333;font-weight:600}
+    /* TABLES */
+    table{width:100%;border-collapse:collapse;font-size:13px}
+    th{background:#f0f7f3;padding:10px 12px;text-align:left;font-size:11px;color:#088058;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+    td{padding:10px 12px;border-bottom:1px solid #f5f5f5;color:#444}
+    tr:last-child td{border-bottom:none}
+    tr:hover td{background:#fafff9}
+    .badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600}
+    .bg{background:#d4f0e4;color:#0a5c33}
+    .ba{background:#fef3cd;color:#7a5500}
+    .br{background:#fdecea;color:#c0392b}
+    /* BUTTONS */
+    .btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all .2s;font-family:'Segoe UI',sans-serif}
+    .btn-p{background:#088058;color:#fff}.btn-p:hover{background:#055c3e}
+    .btn-e{background:#e8f5ee;color:#088058}.btn-e:hover{background:#c4dfd1}
+    .btn-d{background:#fdecea;color:#c0392b}.btn-d:hover{background:#f5c6c6}
+    .btn-g{background:#f5f5f5;color:#555}.btn-g:hover{background:#e8e8e8}
+    /* MODAL */
+    .mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;padding:20px}
+    .mo.open{display:flex}
+    .mbox{background:#fff;border-radius:14px;width:100%;max-width:540px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+    .mhdr{padding:18px 22px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center}
+    .mhdr h3{font-size:16px;color:#333}
+    .mclose{background:none;border:none;font-size:20px;cursor:pointer;color:#888;line-height:1;padding:2px 6px}
+    .mbody{padding:22px}
+    .mftr{padding:14px 22px;border-top:1px solid #eee;display:flex;justify-content:flex-end;gap:10px}
+    .fg2{margin-bottom:14px}
+    .fg2 label{display:block;font-size:12px;font-weight:600;color:#555;margin-bottom:5px}
+    .fg2 input,.fg2 textarea,.fg2 select{width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:7px;font-size:13px;font-family:'Segoe UI',sans-serif;outline:none;transition:border .2s;box-sizing:border-box}
+    .fg2 input:focus,.fg2 textarea:focus,.fg2 select:focus{border-color:#088058}
+    .fg2 textarea{resize:vertical;min-height:80px}
+    /* INLINE EDIT HIGHLIGHT */
+    .editable{cursor:pointer;padding:2px 6px;border-radius:4px;transition:background .2s;border:1px solid transparent}
+    .editable:hover{background:#e8f5ee;border-color:#b4d8c4}
+    /* ALERT */
+    .toast{position:fixed;bottom:24px;right:24px;background:#088058;color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:99999;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none}
+    .toast.show{opacity:1;transform:translateY(0)}
+    /* SETTINGS */
+    .settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    @media(max-width:900px){.sidebar{width:200px}.main{margin-left:200px}}
+    @media(max-width:700px){.sidebar{display:none}.main{margin-left:0}.settings-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="icon">🤲</div>
+      <h2>Admin Portal</h2>
+      <p>Golden Hands CBO — Secure Login</p>
+    </div>
+    <div class="err-box" id="err-box"><i class="fas fa-exclamation-circle"></i> &nbsp;<span id="err-msg">Invalid username or password.</span></div>
+    <div class="fg"><label>Username</label><input type="text" id="login-user" placeholder="Enter username" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <div class="fg"><label>Password</label><input type="password" id="login-pass" placeholder="Enter password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <button class="login-btn" onclick="doLogin()"><i class="fas fa-sign-in-alt"></i> &nbsp;Login</button>
+    <div class="login-hint">Default: admin / GoldenHands2025!</div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <div class="sidebar">
+    <div class="sb-logo">
+      <img src="logo.svg" alt="Logo">
+      <div><div class="sb-logo-text">Golden Hands CBO</div><div class="sb-logo-sub">Admin Portal</div></div>
+    </div>
+    <nav class="sb-nav">
+      <button class="sb-item active" onclick="showPanel('overview',this)"><i class="fas fa-th-large"></i> Overview</button>
+      <button class="sb-item" onclick="showPanel('pages',this)"><i class="fas fa-file-alt"></i> Page Content</button>
+      <button class="sb-item" onclick="showPanel('events',this)"><i class="fas fa-calendar-alt"></i> Events</button>
+      <button class="sb-item" onclick="showPanel('blog',this)"><i class="fas fa-blog"></i> Blog Posts</button>
+      <button class="sb-item" onclick="showPanel('team',this)"><i class="fas fa-users"></i> Team Members</button>
+      <div class="sb-divider"></div>
+      <button class="sb-item" onclick="showPanel('volunteers',this)"><i class="fas fa-hands-helping"></i> Volunteers</button>
+      <button class="sb-item" onclick="showPanel('donations',this)"><i class="fas fa-donate"></i> Donations</button>
+      <button class="sb-item" onclick="showPanel('messages',this)"><i class="fas fa-envelope"></i> Messages <span id="unread-badge" style="background:rgba(255,255,255,.25);border-radius:10px;padding:1px 7px;font-size:11px;margin-left:4px;">3</span></button>
+      <div class="sb-divider"></div>
+      <button class="sb-item" onclick="showPanel('settings',this)"><i class="fas fa-cog"></i> Settings</button>
+    </nav>
+    <div class="sb-footer">
+      <div class="sb-user">
+        <div class="sb-avatar" id="sb-av">A</div>
+        <div><div class="sb-uname" id="sb-uname">Admin</div><div class="sb-urole">Administrator</div></div>
+      </div>
+      <button class="logout-btn" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i> &nbsp;Logout</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <h2 id="panel-title">Dashboard Overview</h2>
+        <p id="panel-sub">Welcome back! Here is what is happening at Golden Hands CBO.</p>
+      </div>
+      <div class="topbar-right">
+        <div class="clock-badge"><i class="fas fa-clock"></i><div><div id="a-time">00:00:00</div></div></div>
+        <a href="index.html" target="_blank" class="view-site-btn"><i class="fas fa-external-link-alt"></i> View Site</a>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- OVERVIEW -->
+      <div class="panel active" id="panel-overview">
+        <div class="stat-row">
+          <div class="sc"><div class="n" id="stat-pages">9</div><div class="l">Pages</div></div>
+          <div class="sc"><div class="n" id="stat-events">0</div><div class="l">Events</div></div>
+          <div class="sc"><div class="n" id="stat-blogs">0</div><div class="l">Blog Posts</div></div>
+          <div class="sc"><div class="n" id="stat-team">0</div><div class="l">Team Members</div></div>
+          <div class="sc"><div class="n" id="stat-vols">0</div><div class="l">Volunteers</div></div>
+          <div class="sc"><div class="n" id="stat-msgs">0</div><div class="l">Messages</div></div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><h3>Quick Actions</h3></div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <button class="btn btn-p" onclick="showPanel('events',document.querySelector('[onclick*=events]'))"><i class="fas fa-plus"></i> Add Event</button>
+            <button class="btn btn-p" onclick="showPanel('blog',document.querySelector('[onclick*=blog]'))"><i class="fas fa-plus"></i> New Blog Post</button>
+            <button class="btn btn-p" onclick="showPanel('team',document.querySelector('[onclick*=team]'))"><i class="fas fa-plus"></i> Add Team Member</button>
+            <button class="btn btn-g" onclick="showPanel('messages',document.querySelector('[onclick*=messages]'))"><i class="fas fa-envelope"></i> View Messages</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><h3>Recent Activity</h3></div>
+          <div id="activity-log" style="font-size:13px;color:#666;line-height:2;">
+            <div><i class="fas fa-circle" style="font-size:8px;color:#088058;margin-right:8px;"></i> Admin portal loaded successfully</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAGE CONTENT EDITOR -->
+      <div class="panel" id="panel-pages">
+        <div class="card">
+          <div class="card-hdr"><h3>Edit Page Content</h3><span style="font-size:12px;color:#999;">Changes are saved to browser storage and reflected on the site</span></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;" id="page-tabs">
+            <button class="page-tab active-pt" onclick="loadPageContent('home',this)">Home</button>
+            <button class="page-tab" onclick="loadPageContent('about',this)">About</button>
+            <button class="page-tab" onclick="loadPageContent('programs',this)">Programs</button>
+            <button class="page-tab" onclick="loadPageContent('blog',this)">Blog</button>
+            <button class="page-tab" onclick="loadPageContent('team',this)">Team</button>
+            <button class="page-tab" onclick="loadPageContent('volunteer',this)">Volunteer</button>
+            <button class="page-tab" onclick="loadPageContent('support',this)">Support</button>
+            <button class="page-tab" onclick="loadPageContent('contact',this)">Contact</button>
+          </div>
+          <style>.page-tab{padding:7px 16px;border-radius:20px;border:1px solid #ddd;background:#fff;cursor:pointer;font-size:13px;transition:all .2s}.page-tab:hover{border-color:#088058;color:#088058}.active-pt{background:#088058;color:#fff;border-color:#088058}</style>
+          <div id="page-editor-area"></div>
+        </div>
+      </div>
+
+      <!-- EVENTS -->
+      <div class="panel" id="panel-events">
+        <div class="card">
+          <div class="card-hdr">
+            <h3>Manage Events</h3>
+            <button class="btn btn-p" onclick="openModal('event-modal','add-event')"><i class="fas fa-plus"></i> Add Event</button>
+          </div>
+          <table>
+            <thead><tr><th>Title</th><th>Date</th><th>Location</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="events-table"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- BLOG -->
+      <div class="panel" id="panel-blog">
+        <div class="card">
+          <div class="card-hdr">
+            <h3>Blog Posts</h3>
+            <button class="btn btn-p" onclick="openModal('blog-modal','add-blog')"><i class="fas fa-plus"></i> New Post</button>
+          </div>
+          <table>
+            <thead><tr><th>Title</th><th>Category</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="blog-table"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TEAM -->
+      <div class="panel" id="panel-team">
+        <div class="card">
+          <div class="card-hdr">
+            <h3>Team Members</h3>
+            <button class="btn btn-p" onclick="openModal('team-modal','add-team')"><i class="fas fa-plus"></i> Add Member</button>
+          </div>
+          <table>
+            <thead><tr><th>Name</th><th>Role</th><th>Email</th><th>Actions</th></tr></thead>
+            <tbody id="team-table"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- VOLUNTEERS -->
+      <div class="panel" id="panel-volunteers">
+        <div class="card">
+          <div class="card-hdr">
+            <h3>Volunteer Applications</h3>
+            <button class="btn btn-g" onclick="exportCSV('volunteers')"><i class="fas fa-download"></i> Export CSV</button>
+          </div>
+          <table>
+            <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Joined</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="volunteers-table"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- DONATIONS -->
+      <div class="panel" id="panel-donations">
+        <div class="card">
+          <div class="card-hdr">
+            <h3>Donation Records</h3>
+            <button class="btn btn-g" onclick="exportCSV('donations')"><i class="fas fa-download"></i> Export CSV</button>
+          </div>
+          <div class="stat-row" style="margin-bottom:20px;">
+            <div class="sc"><div class="n" id="don-total">KSh 0</div><div class="l">Total Donations</div></div>
+            <div class="sc"><div class="n" id="don-count">0</div><div class="l">Donors</div></div>
+          </div>
+          <table>
+            <thead><tr><th>Donor</th><th>Amount (KSh)</th><th>Method</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="donations-table"></tbody>
+          </table>
+          <div style="margin-top:16px;">
+            <button class="btn btn-p" onclick="openModal('donation-modal','add-donation')"><i class="fas fa-plus"></i> Record Donation</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- MESSAGES -->
+      <div class="panel" id="panel-messages">
+        <div class="card">
+          <div class="card-hdr"><h3>Contact Messages</h3></div>
+          <table>
+            <thead><tr><th>From</th><th>Email</th><th>Subject</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="messages-table"></tbody>
+          </table>
+          <div style="margin-top:16px;">
+            <button class="btn btn-p" onclick="openModal('msg-modal','add-msg')"><i class="fas fa-plus"></i> Add Message</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div class="panel" id="panel-settings">
+        <div class="card">
+          <div class="card-hdr"><h3>Site Settings</h3></div>
+          <div class="settings-grid">
+            <div class="fg2"><label>Organisation Name</label><input type="text" id="s-orgname" value="Golden Hands CBO"></div>
+            <div class="fg2"><label>Tagline</label><input type="text" id="s-tagline" value="Mental Health Advocacy"></div>
+            <div class="fg2"><label>Contact Email</label><input type="text" id="s-email" value="hello@goldenhands.or.ke"></div>
+            <div class="fg2"><label>Phone / Crisis Line</label><input type="text" id="s-phone" value="+254 722 178 177"></div>
+            <div class="fg2"><label>Address</label><input type="text" id="s-address" value="Ngong Road, Nairobi, Kenya"></div>
+            <div class="fg2"><label>M-Pesa Paybill</label><input type="text" id="s-mpesa" value="123456"></div>
+          </div>
+          <button class="btn btn-p" onclick="saveSettings()" style="margin-top:8px;"><i class="fas fa-save"></i> Save Settings</button>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><h3>Change Password</h3></div>
+          <div class="settings-grid">
+            <div class="fg2"><label>Username</label><input type="text" id="s-user" placeholder="New username"></div>
+            <div class="fg2"><label>New Password</label><input type="password" id="s-pass" placeholder="New password"></div>
+            <div class="fg2"><label>Confirm Password</label><input type="password" id="s-pass2" placeholder="Confirm password"></div>
+          </div>
+          <button class="btn btn-p" onclick="changePassword()" style="margin-top:8px;"><i class="fas fa-key"></i> Update Credentials</button>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><h3>Data Management</h3></div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <button class="btn btn-g" onclick="exportAll()"><i class="fas fa-download"></i> Export All Data (JSON)</button>
+            <button class="btn btn-d" onclick="if(confirm('Reset ALL data? This cannot be undone.'))resetAll()"><i class="fas fa-trash"></i> Reset All Data</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end content -->
+  </div><!-- end main -->
+</div><!-- end dashboard -->
+
+<!-- MODALS -->
+<!-- Event Modal -->
+<div class="mo" id="event-modal">
+  <div class="mbox">
+    <div class="mhdr"><h3 id="event-modal-title">Add Event</h3><button class="mclose" onclick="closeModal('event-modal')">&#x2715;</button></div>
+    <div class="mbody">
+      <input type="hidden" id="ev-id">
+      <div class="fg2"><label>Event Title</label><input type="text" id="ev-title" placeholder="e.g. World Mental Health Day Conference"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="fg2"><label>Date</label><input type="date" id="ev-date"></div>
+        <div class="fg2"><label>Time</label><input type="text" id="ev-time" placeholder="e.g. 9:00 AM – 4:00 PM"></div>
+      </div>
+      <div class="fg2"><label>Location</label><input type="text" id="ev-location" placeholder="e.g. Kenyatta International Convention Centre"></div>
+      <div class="fg2"><label>Description</label><textarea id="ev-desc" placeholder="Event description..."></textarea></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="fg2"><label>Status</label><select id="ev-status"><option value="upcoming">Upcoming</option><option value="ongoing">Ongoing</option><option value="past">Past</option></select></div>
+        <div class="fg2"><label>Emoji</label><input type="text" id="ev-emoji" placeholder="e.g. 🧠" maxlength="4"></div>
+      </div>
+    </div>
+    <div class="mftr">
+      <button class="btn btn-g" onclick="closeModal('event-modal')">Cancel</button>
+      <button class="btn btn-p" onclick="saveEvent()"><i class="fas fa-save"></i> Save Event</button>
+    </div>
+  </div>
+</div>
+
+<!-- Blog Modal -->
+<div class="mo" id="blog-modal">
+  <div class="mbox">
+    <div class="mhdr"><h3 id="blog-modal-title">New Blog Post</h3><button class="mclose" onclick="closeModal('blog-modal')">&#x2715;</button></div>
+    <div class="mbody">
+      <input type="hidden" id="bl-id">
+      <div class="fg2"><label>Title</label><input type="text" id="bl-title" placeholder="Blog post title"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="fg2"><label>Category</label><select id="bl-cat"><option>Self-care</option><option>Stigma</option><option>Youth</option><option>Healing</option><option>Policy</option><option>Outreach</option><option>Other</option></select></div>
+        <div class="fg2"><label>Date</label><input type="date" id="bl-date"></div>
+      </div>
+      <div class="fg2"><label>Summary / Excerpt</label><textarea id="bl-summary" placeholder="Short summary shown on the blog page..."></textarea></div>
+      <div class="fg2"><label>Status</label><select id="bl-status"><option value="published">Published</option><option value="draft">Draft</option></select></div>
+    </div>
+    <div class="mftr">
+      <button class="btn btn-g" onclick="closeModal('blog-modal')">Cancel</button>
+      <button class="btn btn-p" onclick="saveBlog()"><i class="fas fa-save"></i> Save Post</button>
+    </div>
+  </div>
+</div>
+
+<!-- Team Modal -->
+<div class="mo" id="team-modal">
+  <div class="mbox">
+    <div class="mhdr"><h3 id="team-modal-title">Add Team Member</h3><button class="mclose" onclick="closeModal('team-modal')">&#x2715;</button></div>
+    <div class="mbody">
+      <input type="hidden" id="tm-id">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="fg2"><label>Full Name</label><input type="text" id="tm-name" placeholder="e.g. Amina Wanjiku"></div>
+        <div class="fg2"><label>Role / Title</label><input type="text" id="tm-role" placeholder="e.g. Executive Director"></div>
+      </div>
+      <div class="fg2"><label>Email</label><input type="email" id="tm-email" placeholder="email@example.com"></div>
+      <div class="fg2"><label>Bio</label><textarea id="tm-bio" placeholder="Short biography..."></textarea></div>
+    </div>
+    <div class="mftr">
+      <button class="btn btn-g" onclick="closeModal('team-modal')">Cancel</button>
+      <button class="btn btn-p" onclick="saveTeam()"><i class="fas fa-save"></i> Save Member</button>
+    </div>
+  </div>
+</div>
+
+<!-- Donation Modal -->
+<div class="mo" id="donation-modal">
+  <div class="mbox">
+    <div class="mhdr"><h3>Record Donation</h3><button class="mclose" onclick="closeModal('donation-modal')">&#x2715;</button></div>
+    <div class="mbody">
+      <input type="hidden" id="dn-id">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="fg2"><label>Donor Name</label><input type="text" id="dn-name" placeholder="Name or Anonymous"></div>
+        <div class="fg2"><label>Amount (KSh)</label><input type="number" id="dn-amount" placeholder="e.g. 5000"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="fg2"><label>Method</label><select id="dn-method"><option>M-Pesa</option><option>Bank Transfer</option><option>Card</option><option>Cash</option></select></div>
+        <div class="fg2"><label>Date</label><input type="date" id="dn-date"></div>
+      </div>
+      <div class="fg2"><label>Status</label><select id="dn-status"><option value="confirmed">Confirmed</option><option value="pending">Pending</option></select></div>
+    </div>
+    <div class="mftr">
+      <button class="btn btn-g" onclick="closeModal('donation-modal')">Cancel</button>
+      <button class="btn btn-p" onclick="saveDonation()"><i class="fas fa-save"></i> Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Message Modal -->
+<div class="mo" id="msg-modal">
+  <div class="mbox">
+    <div class="mhdr"><h3 id="msg-modal-title">Message</h3><button class="mclose" onclick="closeModal('msg-modal')">&#x2715;</button></div>
+    <div class="mbody">
+      <input type="hidden" id="ms-id">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="fg2"><label>From</label><input type="text" id="ms-from" placeholder="Name"></div>
+        <div class="fg2"><label>Email</label><input type="email" id="ms-email" placeholder="email@example.com"></div>
+      </div>
+      <div class="fg2"><label>Subject</label><input type="text" id="ms-subject" placeholder="Subject"></div>
+      <div class="fg2"><label>Message</label><textarea id="ms-body" placeholder="Message content..."></textarea></div>
+      <div class="fg2"><label>Status</label><select id="ms-status"><option value="unread">Unread</option><option value="read">Read</option><option value="replied">Replied</option></select></div>
+    </div>
+    <div class="mftr">
+      <button class="btn btn-g" onclick="closeModal('msg-modal')">Cancel</button>
+      <button class="btn btn-p" onclick="saveMsg()"><i class="fas fa-save"></i> Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===== STORAGE HELPERS ===== */
+function ls(k,def){try{const v=localStorage.getItem(k);return v?JSON.parse(v):def;}catch(e){return def;}}
+function ss(k,v){localStorage.setItem(k,JSON.stringify(v));}
+
+/* ===== AUTH ===== */
+const DEFAULT_CREDS={user:'admin',pass:'GoldenHands2025!'};
+function getCreds(){return ls('gh_creds',DEFAULT_CREDS);}
+function doLogin(){
+  const u=document.getElementById('login-user').value.trim();
+  const p=document.getElementById('login-pass').value;
+  const c=getCreds();
+  if(u===c.user&&p===c.pass){
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('dashboard').style.display='block';
+    document.getElementById('sb-av').textContent=u[0].toUpperCase();
+    document.getElementById('sb-uname').textContent=u;
+    initDashboard();
+    log('Logged in as '+u);
+  } else {
+    const eb=document.getElementById('err-box');
+    document.getElementById('err-msg').textContent='Invalid username or password. Please try again.';
+    eb.style.display='block';
+    setTimeout(()=>eb.style.display='none',4000);
+  }
+}
+function doLogout(){
+  if(confirm('Log out of admin portal?')){
+    document.getElementById('dashboard').style.display='none';
+    document.getElementById('login-screen').style.display='flex';
+    document.getElementById('login-user').value='';
+    document.getElementById('login-pass').value='';
+  }
+}
+
+/* ===== CLOCK ===== */
+setInterval(()=>{
+  const n=new Date();
+  const t=document.getElementById('a-time');
+  if(t)t.textContent=pad(n.getHours())+':'+pad(n.getMinutes())+':'+pad(n.getSeconds());
+},1000);
+function pad(n){return String(n).padStart(2,'0');}
+
+/* ===== PANELS ===== */
+const panelMeta={
+  overview:{title:'Dashboard Overview',sub:'Welcome back! Here is what is happening at Golden Hands CBO.'},
+  pages:{title:'Page Content Editor',sub:'Edit and save text content for each page of the website.'},
+  events:{title:'Events Manager',sub:'Add, edit, and remove events. Changes appear instantly on events.html.'},
+  blog:{title:'Blog Posts',sub:'Create and manage blog articles shown on the blog page.'},
+  team:{title:'Team Members',sub:'Manage team profiles shown on the team page.'},
+  volunteers:{title:'Volunteer Applications',sub:'View and manage volunteer records.'},
+  donations:{title:'Donation Records',sub:'Track all donations received by Golden Hands CBO.'},
+  messages:{title:'Contact Messages',sub:'Read and respond to messages from the contact form.'},
+  settings:{title:'Site Settings',sub:'Update organisation details, credentials, and data.'}
+};
+function showPanel(id,btn){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(b=>b.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  if(btn)btn.classList.add('active');
+  const m=panelMeta[id]||{title:id,sub:''};
+  document.getElementById('panel-title').textContent=m.title;
+  document.getElementById('panel-sub').textContent=m.sub;
+  if(id==='overview')updateStats();
+}
+
+/* ===== TOAST ===== */
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+/* ===== ACTIVITY LOG ===== */
+const acts=[];
+function log(msg){
+  acts.unshift(new Date().toLocaleTimeString()+' — '+msg);
+  const el=document.getElementById('activity-log');
+  if(el)el.innerHTML=acts.slice(0,10).map(a=>'<div><i class="fas fa-circle" style="font-size:8px;color:#088058;margin-right:8px;"></i>'+a+'</div>').join('');
+}
+
+/* ===== STATS ===== */
+function updateStats(){
+  const evs=ls('gh_events',[]);const bls=ls('gh_blogs',[]);const tms=ls('gh_team',[]);
+  const vls=ls('gh_volunteers',[]);const dns=ls('gh_donations',[]);const mss=ls('gh_messages',[]);
+  set('stat-events',evs.length);set('stat-blogs',bls.length);set('stat-team',tms.length);
+  set('stat-vols',vls.length);set('stat-msgs',mss.length);
+  const unread=mss.filter(m=>m.status==='unread').length;
+  const ub=document.getElementById('unread-badge');if(ub)ub.textContent=unread;
+}
+function set(id,v){const e=document.getElementById(id);if(e)e.textContent=v;}
+
+/* ===== MODALS ===== */
+function openModal(id,mode,data){
+  document.getElementById(id).classList.add('open');
+  if(mode==='add-event'){clearForm(['ev-id','ev-title','ev-date','ev-time','ev-location','ev-desc','ev-emoji']);document.getElementById('ev-status').value='upcoming';document.getElementById('event-modal-title').textContent='Add Event';}
+  if(mode==='edit-event'&&data){document.getElementById('event-modal-title').textContent='Edit Event';fillForm(data,{id:'ev-id',title:'ev-title',date:'ev-date',time:'ev-time',location:'ev-location',description:'ev-desc',status:'ev-status',emoji:'ev-emoji'});}
+  if(mode==='add-blog'){clearForm(['bl-id','bl-title','bl-date','bl-summary']);document.getElementById('bl-status').value='published';document.getElementById('blog-modal-title').textContent='New Blog Post';document.getElementById('bl-date').value=today();}
+  if(mode==='edit-blog'&&data){document.getElementById('blog-modal-title').textContent='Edit Post';fillForm(data,{id:'bl-id',title:'bl-title',category:'bl-cat',date:'bl-date',summary:'bl-summary',status:'bl-status'});}
+  if(mode==='add-team'){clearForm(['tm-id','tm-name','tm-role','tm-email','tm-bio']);document.getElementById('team-modal-title').textContent='Add Team Member';}
+  if(mode==='edit-team'&&data){document.getElementById('team-modal-title').textContent='Edit Member';fillForm(data,{id:'tm-id',name:'tm-name',role:'tm-role',email:'tm-email',bio:'tm-bio'});}
+  if(mode==='add-donation'){clearForm(['dn-id','dn-name','dn-amount']);document.getElementById('dn-date').value=today();document.getElementById('dn-status').value='confirmed';}
+  if(mode==='edit-donation'&&data){fillForm(data,{id:'dn-id',name:'dn-name',amount:'dn-amount',method:'dn-method',date:'dn-date',status:'dn-status'});}
+  if(mode==='add-msg'){clearForm(['ms-id','ms-from','ms-email','ms-subject','ms-body']);document.getElementById('ms-status').value='unread';}
+  if(mode==='view-msg'&&data){document.getElementById('msg-modal-title').textContent='Message from '+data.from;fillForm(data,{id:'ms-id',from:'ms-from',email:'ms-email',subject:'ms-subject',body:'ms-body',status:'ms-status'});}
+}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+function clearForm(ids){ids.forEach(id=>{const e=document.getElementById(id);if(e)e.value='';})}
+function fillForm(data,map){Object.entries(map).forEach(([k,id])=>{const e=document.getElementById(id);if(e&&data[k]!==undefined)e.value=data[k];});}
+function today(){return new Date().toISOString().split('T')[0];}
+function uid(){return Date.now()+'_'+Math.random().toString(36).substr(2,5);}
+
+/* ===== EVENTS ===== */
+function getEvents(){return ls('gh_events',[]);}
+function renderEvents(){
+  const evs=getEvents();
+  document.getElementById('events-table').innerHTML=evs.length?evs.map(ev=>`
+    <tr>
+      <td><strong>${ev.emoji||'📅'} ${ev.title}</strong></td>
+      <td>${ev.date||'—'}</td>
+      <td>${ev.location||'—'}</td>
+      <td><span class="badge ${ev.status==='upcoming'?'bg':ev.status==='ongoing'?'ba':'br'}">${ev.status}</span></td>
+      <td><button class="btn btn-e" onclick='openModal("event-modal","edit-event",${JSON.stringify(ev)})'><i class="fas fa-edit"></i></button> <button class="btn btn-d" onclick="delEvent('${ev.id}')"><i class="fas fa-trash"></i></button></td>
+    </tr>`).join(''):'<tr><td colspan="5" style="text-align:center;color:#aaa;padding:20px;">No events yet. Click Add Event to create one.</td></tr>';
+}
+function saveEvent(){
+  const id=document.getElementById('ev-id').value||uid();
+  const ev={id,title:document.getElementById('ev-title').value,date:document.getElementById('ev-date').value,time:document.getElementById('ev-time').value,location:document.getElementById('ev-location').value,description:document.getElementById('ev-desc').value,status:document.getElementById('ev-status').value,emoji:document.getElementById('ev-emoji').value||'📅'};
+  if(!ev.title){alert('Please enter a title.');return;}
+  const evs=getEvents();const idx=evs.findIndex(e=>e.id===id);
+  if(idx>-1)evs[idx]=ev;else evs.push(ev);
+  ss('gh_events',evs);closeModal('event-modal');renderEvents();updateStats();
+  toast('Event saved successfully!');log('Event saved: '+ev.title);
+}
+function delEvent(id){if(!confirm('Delete this event?'))return;ss('gh_events',getEvents().filter(e=>e.id!==id));renderEvents();updateStats();toast('Event deleted.');log('Event deleted: '+id);}
+
+/* ===== BLOG ===== */
+function getBlogs(){return ls('gh_blogs',[]);}
+function renderBlogs(){
+  const bls=getBlogs();
+  document.getElementById('blog-table').innerHTML=bls.length?bls.map(b=>`
+    <tr>
+      <td><strong>${b.title}</strong></td>
+      <td>${b.category||'—'}</td>
+      <td>${b.date||'—'}</td>
+      <td><span class="badge ${b.status==='published'?'bg':'ba'}">${b.status}</span></td>
+      <td><button class="btn btn-e" onclick='openModal("blog-modal","edit-blog",${JSON.stringify(b)})'><i class="fas fa-edit"></i></button> <button class="btn btn-d" onclick="delBlog('${b.id}')"><i class="fas fa-trash"></i></button></td>
+    </tr>`).join(''):'<tr><td colspan="5" style="text-align:center;color:#aaa;padding:20px;">No blog posts yet.</td></tr>';
+}
+function saveBlog(){
+  const id=document.getElementById('bl-id').value||uid();
+  const b={id,title:document.getElementById('bl-title').value,category:document.getElementById('bl-cat').value,date:document.getElementById('bl-date').value,summary:document.getElementById('bl-summary').value,status:document.getElementById('bl-status').value};
+  if(!b.title){alert('Please enter a title.');return;}
+  const bls=getBlogs();const idx=bls.findIndex(x=>x.id===id);
+  if(idx>-1)bls[idx]=b;else bls.push(b);
+  ss('gh_blogs',bls);closeModal('blog-modal');renderBlogs();updateStats();
+  toast('Blog post saved!');log('Blog saved: '+b.title);
+}
+function delBlog(id){if(!confirm('Delete this post?'))return;ss('gh_blogs',getBlogs().filter(b=>b.id!==id));renderBlogs();updateStats();toast('Post deleted.');}
+
+/* ===== TEAM ===== */
+function getTeam(){return ls('gh_team',[]);}
+function renderTeam(){
+  const tms=getTeam();
+  document.getElementById('team-table').innerHTML=tms.length?tms.map(t=>`
+    <tr>
+      <td><strong>${t.name}</strong></td>
+      <td>${t.role||'—'}</td>
+      <td>${t.email||'—'}</td>
+      <td><button class="btn btn-e" onclick='openModal("team-modal","edit-team",${JSON.stringify(t)})'><i class="fas fa-edit"></i></button> <button class="btn btn-d" onclick="delTeam('${t.id}')"><i class="fas fa-trash"></i></button></td>
+    </tr>`).join(''):'<tr><td colspan="4" style="text-align:center;color:#aaa;padding:20px;">No team members added yet.</td></tr>';
+}
+function saveTeam(){
+  const id=document.getElementById('tm-id').value||uid();
+  const t={id,name:document.getElementById('tm-name').value,role:document.getElementById('tm-role').value,email:document.getElementById('tm-email').value,bio:document.getElementById('tm-bio').value};
+  if(!t.name){alert('Please enter a name.');return;}
+  const tms=getTeam();const idx=tms.findIndex(x=>x.id===id);
+  if(idx>-1)tms[idx]=t;else tms.push(t);
+  ss('gh_team',tms);closeModal('team-modal');renderTeam();updateStats();
+  toast('Team member saved!');log('Team member saved: '+t.name);
+}
+function delTeam(id){if(!confirm('Remove this team member?'))return;ss('gh_team',getTeam().filter(t=>t.id!==id));renderTeam();updateStats();}
+
+/* ===== VOLUNTEERS ===== */
+function getVolunteers(){
+  return ls('gh_volunteers',[
+    {id:'v1',name:'Ruth Akinyi',email:'ruth@example.com',role:'Community Facilitator',joined:'2025-01-15',status:'active'},
+    {id:'v2',name:'Moses Kariuki',email:'moses@example.com',role:'Digital Volunteer',joined:'2025-02-10',status:'active'},
+    {id:'v3',name:'Lydia Opiyo',email:'lydia@example.com',role:'Outreach Volunteer',joined:'2025-03-22',status:'pending'},
+    {id:'v4',name:'Cynthia Boke',email:'cynthia@example.com',role:'Digital Volunteer',joined:'2025-04-05',status:'pending'},
+  ]);
+}
+function renderVolunteers(){
+  const vls=getVolunteers();
+  document.getElementById('volunteers-table').innerHTML=vls.map(v=>`
+    <tr>
+      <td><strong>${v.name}</strong></td><td>${v.email}</td><td>${v.role}</td><td>${v.joined}</td>
+      <td><span class="badge ${v.status==='active'?'bg':'ba'}">${v.status}</span></td>
+      <td>
+        <button class="btn btn-e btn-sm" onclick="toggleVolStatus('${v.id}')">${v.status==='active'?'Deactivate':'Activate'}</button>
+        <button class="btn btn-d btn-sm" onclick="delVol('${v.id}')"><i class="fas fa-trash"></i></button>
+      </td>
+    </tr>`).join('');
+}
+function toggleVolStatus(id){const vls=getVolunteers();const v=vls.find(x=>x.id===id);if(v){v.status=v.status==='active'?'pending':'active';ss('gh_volunteers',vls);renderVolunteers();toast('Status updated.');}}
+function delVol(id){if(!confirm('Remove volunteer?'))return;ss('gh_volunteers',getVolunteers().filter(v=>v.id!==id));renderVolunteers();updateStats();}
+
+/* ===== DONATIONS ===== */
+function getDonations(){
+  return ls('gh_donations',[
+    {id:'d1',name:'Anonymous',amount:5000,method:'M-Pesa',date:'2025-06-10',status:'confirmed'},
+    {id:'d2',name:'J. Mwangi',amount:1500,method:'Card',date:'2025-06-08',status:'confirmed'},
+    {id:'d3',name:'E. Otieno',amount:10000,method:'Bank Transfer',date:'2025-06-05',status:'pending'},
+  ]);
+}
+function renderDonations(){
+  const dns=getDonations();
+  const total=dns.filter(d=>d.status==='confirmed').reduce((s,d)=>s+Number(d.amount),0);
+  set('don-total','KSh '+total.toLocaleString());set('don-count',dns.length);
+  document.getElementById('donations-table').innerHTML=dns.map(d=>`
+    <tr>
+      <td><strong>${d.name}</strong></td><td>KSh ${Number(d.amount).toLocaleString()}</td><td>${d.method}</td><td>${d.date}</td>
+      <td><span class="badge ${d.status==='confirmed'?'bg':'ba'}">${d.status}</span></td>
+      <td><button class="btn btn-e" onclick='openModal("donation-modal","edit-donation",${JSON.stringify(d)})'><i class="fas fa-edit"></i></button> <button class="btn btn-d" onclick="delDonation('${d.id}')"><i class="fas fa-trash"></i></button></td>
+    </tr>`).join('');
+}
+function saveDonation(){
+  const id=document.getElementById('dn-id').value||uid();
+  const d={id,name:document.getElementById('dn-name').value,amount:document.getElementById('dn-amount').value,method:document.getElementById('dn-method').value,date:document.getElementById('dn-date').value,status:document.getElementById('dn-status').value};
+  const dns=getDonations();const idx=dns.findIndex(x=>x.id===id);
+  if(idx>-1)dns[idx]=d;else dns.push(d);
+  ss('gh_donations',dns);closeModal('donation-modal');renderDonations();
+  toast('Donation recorded!');log('Donation saved: KSh '+d.amount+' from '+d.name);
+}
+function delDonation(id){if(!confirm('Delete this donation record?'))return;ss('gh_donations',getDonations().filter(d=>d.id!==id));renderDonations();}
+
+/* ===== MESSAGES ===== */
+function getMessages(){
+  return ls('gh_messages',[
+    {id:'m1',from:'info@ngo.org',email:'info@ngo.org',subject:'Partnership Inquiry',body:'We would like to explore a partnership with your organisation.',date:'2025-06-11',status:'unread'},
+    {id:'m2',from:'Jane Doe',email:'jane@gmail.com',subject:'General Enquiry',body:'How can I support your programs?',date:'2025-06-10',status:'read'},
+    {id:'m3',from:'Media Desk',email:'media@nation.co.ke',subject:'Media Interview Request',body:'We would like to feature Golden Hands CBO in our health segment.',date:'2025-06-09',status:'unread'},
+  ]);
+}
+function renderMessages(){
+  const mss=getMessages();
+  document.getElementById('messages-table').innerHTML=mss.map(m=>`
+    <tr style="${m.status==='unread'?'font-weight:600;':''}">
+      <td>${m.from}</td><td>${m.email}</td><td>${m.subject}</td><td>${m.date||'—'}</td>
+      <td><span class="badge ${m.status==='unread'?'ba':m.status==='replied'?'bg':'br'}">${m.status}</span></td>
+      <td>
+        <button class="btn btn-e" onclick='viewMsg("${m.id}")'><i class="fas fa-eye"></i></button>
+        <button class="btn btn-d" onclick="delMsg('${m.id}')"><i class="fas fa-trash"></i></button>
+      </td>
+    </tr>`).join('');
+  const unread=mss.filter(m=>m.status==='unread').length;
+  const ub=document.getElementById('unread-badge');if(ub)ub.textContent=unread;
+}
+function viewMsg(id){
+  const m=getMessages().find(x=>x.id===id);
+  if(!m)return;
+  // Mark as read
+  const mss=getMessages();const idx=mss.findIndex(x=>x.id===id);
+  if(mss[idx].status==='unread'){mss[idx].status='read';ss('gh_messages',mss);renderMessages();}
+  openModal('msg-modal','view-msg',m);
+}
+function saveMsg(){
+  const id=document.getElementById('ms-id').value||uid();
+  const m={id,from:document.getElementById('ms-from').value,email:document.getElementById('ms-email').value,subject:document.getElementById('ms-subject').value,body:document.getElementById('ms-body').value,status:document.getElementById('ms-status').value,date:today()};
+  const mss=getMessages();const idx=mss.findIndex(x=>x.id===id);
+  if(idx>-1)mss[idx]=m;else mss.push(m);
+  ss('gh_messages',mss);closeModal('msg-modal');renderMessages();updateStats();toast('Message saved!');
+}
+function delMsg(id){if(!confirm('Delete this message?'))return;ss('gh_messages',getMessages().filter(m=>m.id!==id));renderMessages();updateStats();}
+
+/* ===== PAGE CONTENT EDITOR ===== */
+const defaultContent={
+  home:{hero_title:"You Are Not Alone. Mental Health Matters.",hero_sub:"Golden Hands CBO advocates for mental health awareness and accessible support across Kenya.",story:"Golden Hands CBO was established in 2025 by a passionate group of Kenyan mental health advocates, counsellors, and community workers who recognised a growing and largely invisible crisis — the silent suffering of thousands of Kenyans without access to mental health support. Born out of lived experience and a deep commitment to community, we set out with one belief: no one should face mental illness alone.",crisis_number:"+254 722 178 177"},
+  about:{hero_title:"About Golden Hands CBO",mission:"Golden Hands CBO is dedicated to making mental health support accessible, affordable, and stigma-free for all Kenyans.",history:"Founded in 2025 by a group of mental health advocates and community leaders. From humble beginnings in Nairobi, we now touch lives across 6 counties."},
+  contact:{phone:"+254 722 178 177",email:"hello@goldenhands.or.ke",address:"Ngong Road, Nairobi, Kenya"},
+};
+function loadPageContent(page,btn){
+  document.querySelectorAll('.page-tab').forEach(b=>b.classList.remove('active-pt'));
+  btn.classList.add('active-pt');
+  const data=ls('gh_content_'+page,defaultContent[page]||{});
+  const area=document.getElementById('page-editor-area');
+  const fields=Object.entries(data);
+  if(!fields.length){area.innerHTML='<p style="color:#aaa;font-size:13px;">No editable content defined for this page yet.</p>';return;}
+  area.innerHTML='<div style="display:grid;gap:14px;">'+fields.map(([k,v])=>`
+    <div class="fg2">
+      <label>${k.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase())}</label>
+      <${v.length>80?'textarea rows="3"':'input type="text"'} id="pc-${page}-${k}" style="width:100%">${v.length>80?v+`<\/textarea>`:`" value="${v.replace(/"/g,'&quot;')}">`}
+    </div>`).join('')+
+    `<button class="btn btn-p" onclick="savePageContent('${page}')"><i class="fas fa-save"></i> Save ${page.charAt(0).toUpperCase()+page.slice(1)} Page Content</button>
+    </div>`;
+}
+function savePageContent(page){
+  const data=ls('gh_content_'+page,defaultContent[page]||{});
+  Object.keys(data).forEach(k=>{const e=document.getElementById('pc-'+page+'-'+k);if(e)data[k]=e.value;});
+  ss('gh_content_'+page,data);toast('Page content saved! Refresh the page to see changes.');log('Content saved for: '+page);
+}
+
+/* ===== SETTINGS ===== */
+function saveSettings(){
+  const s={orgname:document.getElementById('s-orgname').value,tagline:document.getElementById('s-tagline').value,email:document.getElementById('s-email').value,phone:document.getElementById('s-phone').value,address:document.getElementById('s-address').value,mpesa:document.getElementById('s-mpesa').value};
+  ss('gh_settings',s);toast('Settings saved!');log('Site settings updated');
+}
+function changePassword(){
+  const u=document.getElementById('s-user').value.trim();
+  const p=document.getElementById('s-pass').value;
+  const p2=document.getElementById('s-pass2').value;
+  if(!u||!p){alert('Please fill in username and password.');return;}
+  if(p!==p2){alert('Passwords do not match.');return;}
+  if(p.length<8){alert('Password must be at least 8 characters.');return;}
+  ss('gh_creds',{user:u,pass:p});toast('Credentials updated! Use new credentials next login.');log('Password changed');
+}
+
+/* ===== EXPORT ===== */
+function exportCSV(type){
+  const data=type==='volunteers'?getVolunteers():getDonations();
+  if(!data.length){toast('No data to export.');return;}
+  const keys=Object.keys(data[0]).filter(k=>k!=='id');
+  const csv=[keys.join(','),...data.map(r=>keys.map(k=>'"'+(r[k]||'')+'"').join(','))].join('\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download=type+'_'+today()+'.csv';a.click();toast('CSV exported!');
+}
+function exportAll(){
+  const data={events:getEvents(),blogs:getBlogs(),team:getTeam(),volunteers:getVolunteers(),donations:getDonations(),messages:getMessages(),settings:ls('gh_settings',{})};
+  const a=document.createElement('a');a.href='data:application/json;charset=utf-8,'+encodeURIComponent(JSON.stringify(data,null,2));
+  a.download='goldenhands_data_'+today()+'.json';a.click();toast('Data exported!');
+}
+function resetAll(){
+  ['gh_events','gh_blogs','gh_team','gh_volunteers','gh_donations','gh_messages','gh_settings','gh_creds'].forEach(k=>localStorage.removeItem(k));
+  toast('All data reset. Reloading...');setTimeout(()=>location.reload(),2000);
+}
+
+/* ===== INIT ===== */
+function initDashboard(){
+  updateStats();
+  renderEvents();renderBlogs();renderTeam();renderVolunteers();renderDonations();renderMessages();
+  loadPageContent('home',document.querySelector('.page-tab'));
+  const settings=ls('gh_settings',{});
+  if(settings.orgname)document.getElementById('s-orgname').value=settings.orgname;
+  if(settings.email)document.getElementById('s-email').value=settings.email;
+  if(settings.phone)document.getElementById('s-phone').value=settings.phone;
+  if(settings.address)document.getElementById('s-address').value=settings.address;
+}
+
+// Close modals on overlay click
+document.querySelectorAll('.mo').forEach(mo=>{
+  mo.addEventListener('click',function(e){if(e.target===mo)mo.classList.remove('open');});
+});
+// ESC closes modal
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape')document.querySelectorAll('.mo.open').forEach(m=>m.classList.remove('open'));
+});
+</script>
+</body>
+</html>

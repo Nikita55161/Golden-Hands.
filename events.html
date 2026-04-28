@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Events | Golden Hands CBO</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <a class="logo-wrap" href="index.html">
+    <img src="logo.svg" alt="Golden Hands CBO Logo">
+    <div class="logo-text-wrap">
+      <span class="logo-name">Golden Hands CBO</span>
+      <span class="logo-tagline">Mental Health Advocacy</span>
+    </div>
+  </a>
+  <div class="live-clock"><i class="fas fa-clock"></i><div><div id="clock-time">00:00:00</div><div id="clock-date"></div></div></div>
+  <button class="menu-toggle" onclick="toggleMenu()">&#9776;</button>
+  <nav id="main-nav">
+    <a href="index.html">Home</a>
+    <a href="about.html">About</a>
+    <a href="programs.html">Programs</a>
+    <a href="events.html" class="active">Events</a>
+    <a href="blog.html">Blog</a>
+    <a href="team.html">Team</a>
+    <a href="volunteer.html">Volunteer</a>
+    <a href="support.html">Support Us</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+</header>
+
+<section class="hero" style="background-image: url('images/events-hero11.jpg');">
+  <div class="hero-overlay">
+
+  </div>
+</section>
+
+<!-- COUNTDOWN to next big event -->
+<div class="countdown-banner">
+  <h3><i class="fas fa-calendar-star"></i> &nbsp;Next Major Event: World Mental Health Day Conference — 10 October 2025</h3>
+  <div class="countdown-wrap" id="main-countdown"></div>
+</div>
+
+<!-- LIVE FILTER BAR -->
+<div style="background:#fff;padding:20px 40px;border-bottom:1px solid #e8e8e8;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+  <span style="font-size:14px;font-weight:600;color:#088058;">Filter:</span>
+  <button class="filter-btn active-filter" onclick="filterEvents('all',this)">All Events</button>
+  <button class="filter-btn" onclick="filterEvents('upcoming',this)">Upcoming</button>
+  <button class="filter-btn" onclick="filterEvents('ongoing',this)">Ongoing</button>
+  <button class="filter-btn" onclick="filterEvents('past',this)">Past</button>
+  <input id="event-search" type="text" placeholder="&#128269; Search events..." oninput="searchEvents()" style="margin-left:auto;padding:8px 14px;border:1px solid #ccc;border-radius:20px;font-size:13px;outline:none;width:220px;">
+</div>
+
+<style>
+.filter-btn{padding:7px 18px;border-radius:20px;border:1px solid #ccc;background:#fff;cursor:pointer;font-size:13px;font-weight:600;color:#555;transition:all .2s;}
+.filter-btn:hover{border-color:#088058;color:#088058;}
+.filter-btn.active-filter{background:#088058;color:#fff;border-color:#088058;}
+</style>
+
+<!-- EVENTS GRID (populated by JS) -->
+<div class="events-grid" id="events-grid"></div>
+
+<div id="no-events" style="display:none;text-align:center;padding:60px 20px;color:#888;">
+  <i class="fas fa-calendar-times" style="font-size:40px;margin-bottom:14px;display:block;opacity:.4;"></i>
+  No events found.
+</div>
+
+
+<footer>
+  <div class="footer-col">
+    <img src="logo.svg" alt="Golden Hands CBO" width="56" style="border-radius:50%;background:rgba(255,255,255,0.1);padding:4px;margin-bottom:10px;"><br>
+    <strong>Golden Hands CBO</strong><br>Eldama Ravine, Baringo, Kenya<br>
+    Email: issquah1278@gmail.com<br>Phone: +254 724151206
+  </div>
+  <div class="footer-col">
+    <h4>Quick Links</h4>
+    <a href="index.html">Home</a><a href="about.html">About</a>
+    <a href="programs.html">Programs</a><a href="events.html">Events</a>
+    <a href="blog.html">Blog</a><a href="team.html">Team</a>
+    <a href="volunteer.html">Volunteer</a><a href="support.html">Support Us</a>
+    <a href="contact.html">Contact</a>
+  </div>
+  <div class="footer-col">
+    <h4>Follow Us</h4>
+    <div class="social-icons">
+      <a href="#"><i class="fab fa-facebook-f"></i> Facebook</a>
+      <a href="#"><i class="fab fa-instagram"></i> Instagram</a>
+      <a href="#"><i class="fab fa-twitter"></i> Twitter</a>
+      <a href="#"><i class="fab fa-youtube"></i> YouTube</a>
+    </div>
+  </div>
+</footer>
+<div class="copyright">© 2025 Golden Hands CBO. All rights reserved.</div>
+<script src="script.js"></script>
+</body>
+</html>
+<script src="script.js"></script>
+<script>
+// Load events from localStorage (admin-managed) or use defaults
+function getEvents() {
+  const stored = localStorage.getItem('gh_events');
+  if (stored) return JSON.parse(stored);
+  return [
+    { id:1, title:"World Mental Health Day Conference", date:"2025-10-10", time:"9:00 AM – 4:00 PM", location:"Kenyatta International Convention Centre, Nairobi", description:"Our flagship annual conference bringing together mental health professionals, advocates, policymakers, and community members to discuss the state of mental health in Kenya.", status:"upcoming", emoji:"🧠" },
+    { id:2, title:"Healing Circles — Community Session", date:"2025-07-19", time:"2:00 PM – 4:30 PM", location:"Westlands Community Hall, Nairobi", description:"A facilitated peer support group session for adults navigating anxiety, depression, and grief. Open to all. No registration required.", status:"upcoming", emoji:"💚" },
+    { id:3, title:"Schools for Wellness — Starehe Girls Launch", date:"2025-07-05", time:"10:00 AM – 1:00 PM", location:"Starehe Girls Centre, Nairobi", description:"Launching our emotional wellbeing workshops at Starehe Girls Centre, reaching 400+ students with mental health literacy tools.", status:"upcoming", emoji:"🏫" },
+    { id:4, title:"Clinician Training Workshop", date:"2025-06-28", time:"8:30 AM – 5:00 PM", location:"Aga Khan University Hospital, Nairobi", description:"A full-day mental health first aid training for community health workers, nurses, and frontline caregivers.", status:"ongoing", emoji:"🏥" },
+    { id:5, title:"Kisumu County Outreach", date:"2025-06-14", time:"9:00 AM – 3:00 PM", location:"Kisumu Town Hall, Kisumu", description:"Mobile outreach team delivering mental health screenings, community talks, and referrals across Kisumu County.", status:"past", emoji:"🌍" },
+    { id:6, title:"Fundraising Gala — Building Tomorrow", date:"2025-05-30", time:"6:00 PM – 10:00 PM", location:"Serena Hotel, Nairobi", description:"Our annual fundraising gala celebrating the work of Golden Hands CBO and raising funds for program expansion.", status:"past", emoji:"🌟" }
+  ];
+}
+
+function statusLabel(s) {
+  if (s==='upcoming') return '<span class="event-status status-upcoming">Upcoming</span>';
+  if (s==='ongoing')  return '<span class="event-status status-ongoing">Ongoing</span>';
+  return '<span class="event-status status-past">Past</span>';
+}
+
+function renderEvents(list) {
+  const grid = document.getElementById('events-grid');
+  const none = document.getElementById('no-events');
+  if (!list.length) { grid.innerHTML=''; none.style.display='block'; return; }
+  none.style.display='none';
+  grid.innerHTML = list.map(function(ev) {
+    const d = new Date(ev.date);
+    const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return '<div class="event-card" data-status="'+ev.status+'" data-title="'+ev.title.toLowerCase()+'">'+
+      '<div class="event-card-top">'+
+        '<h3>'+ev.emoji+' '+ev.title+'</h3>'+
+        '<div class="event-date-badge"><div class="day">'+d.getDate()+'</div><div class="month">'+months[d.getMonth()]+'</div></div>'+
+      '</div>'+
+      '<div class="event-card-body">'+
+        '<div class="event-meta">'+
+          '<span><i class="fas fa-calendar"></i> '+d.toDateString()+'</span>'+
+          '<span><i class="fas fa-clock"></i> '+ev.time+'</span>'+
+          '<span><i class="fas fa-map-marker-alt"></i> '+ev.location+'</span>'+
+        '</div>'+
+        '<p>'+ev.description+'</p>'+
+        statusLabel(ev.status)+
+        (ev.status==='upcoming' ? ' <a href="contact.html" class="btn" style="padding:6px 16px;font-size:13px;margin-left:8px;">Register</a>' : '')+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+var currentFilter = 'all';
+function filterEvents(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(function(b){ b.classList.remove('active-filter'); });
+  btn.classList.add('active-filter');
+  applyFilters();
+}
+function searchEvents() { applyFilters(); }
+function applyFilters() {
+  var q = document.getElementById('event-search').value.toLowerCase();
+  var all = getEvents();
+  var filtered = all.filter(function(ev) {
+    var matchStatus = currentFilter==='all' || ev.status===currentFilter;
+    var matchSearch = !q || ev.title.toLowerCase().includes(q) || ev.location.toLowerCase().includes(q) || ev.description.toLowerCase().includes(q);
+    return matchStatus && matchSearch;
+  });
+  renderEvents(filtered);
+}
+
+// Init
+renderEvents(getEvents());
+startCountdown('2025-10-10T09:00:00', 'main-countdown');
+</script>
+</body>
+</html>
